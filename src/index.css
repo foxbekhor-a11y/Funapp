@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Classic Windows 95/98 3D Bevels */
+  .win98-raised {
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #808080;
+  }
+
+  .win98-raised-sm {
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-right: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    box-shadow: inset 1px 1px 0px #dfdfdf, inset -1px -1px 0px #808080;
+  }
+
+  .win98-sunken {
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px #000000, inset -1px -1px 0px #dfdfdf;
+  }
+
+  .win98-sunken-sm {
+    border-top: 1px solid #808080;
+    border-left: 1px solid #808080;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+  }
+
+  .win98-btn:active {
+    border-top: 2px solid #000000;
+    border-left: 2px solid #000000;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-shadow: inset 1px 1px 0px #808080;
+    padding-top: 3px;
+    padding-left: 3px;
+  }
+
+  .win98-titlebar {
+    background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  }
+
+  .win98-titlebar-inactive {
+    background: linear-gradient(90deg, #808080 0%, #b5b5b5 100%);
+  }
+
+  .crt-scanlines {
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%, 
+      rgba(0, 0, 0, 0.25) 50%
+    ), linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.04),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.04)
+    );
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+  }
+
+  .font-win98 {
+    font-family: 'MS Sans Serif', Tahoma, 'Segoe UI', Geneva, sans-serif;
+  }
+
+  .font-retro-mono {
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+  }
+
+  .font-pixel {
+    font-family: 'VT323', monospace;
+  }
+}

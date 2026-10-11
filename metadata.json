@@ -1,0 +1,6 @@
+{
+  "name": "Windows Emotional Troubleshooter 98",
+  "description": "An unlicensed Windows 98 self-help clinic where an AI assistant analyzes your life choices and roasts you with brutal technical precision.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
