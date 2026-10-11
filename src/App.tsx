@@ -260,6 +260,59 @@ export default function App() {
     );
   };
 
+  const toggleFullscreen = (id: AppId) => {
+    sounds.playClick();
+    const newZ = highestZ + 5;
+    setHighestZ(newZ);
+    setWindows((prev) =>
+      prev.map((w) => {
+        if (w.id === id) {
+          const nextFullscreen = !w.isFullscreen;
+          if (nextFullscreen) {
+            try {
+              if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+              }
+            } catch (_) {}
+          } else {
+            try {
+              if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+              }
+            } catch (_) {}
+          }
+          return {
+            ...w,
+            isFullscreen: nextFullscreen,
+            isMinimized: false,
+            zIndex: newZ,
+          };
+        }
+        return w;
+      })
+    );
+    setActiveWindowId(id);
+  };
+
+  // Keyboard shortcut listener: F11 to toggle fullscreen, Escape to exit
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F11') {
+        e.preventDefault();
+        if (activeWindowId) {
+          toggleFullscreen(activeWindowId);
+        }
+      } else if (e.key === 'Escape') {
+        const fullWin = windows.find((w) => w.isFullscreen);
+        if (fullWin) {
+          toggleFullscreen(fullWin.id);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeWindowId, windows, highestZ]);
+
   const moveWindow = (id: AppId, x: number, y: number) => {
     setWindows((prev) =>
       prev.map((w) => (w.id === id ? { ...w, x, y } : w))
@@ -361,6 +414,7 @@ export default function App() {
           isOpen={getWindow('browser').isOpen}
           isMinimized={getWindow('browser').isMinimized}
           isMaximized={getWindow('browser').isMaximized}
+          isFullscreen={getWindow('browser').isFullscreen}
           x={getWindow('browser').x}
           y={getWindow('browser').y}
           width={getWindow('browser').width}
@@ -371,7 +425,13 @@ export default function App() {
           onClose={() => closeWindow('browser')}
           onMinimize={() => minimizeWindow('browser')}
           onMaximize={() => maximizeWindow('browser')}
+          onToggleFullscreen={() => toggleFullscreen('browser')}
           onMove={(x, y) => moveWindow('browser', x, y)}
+          menuBar={[
+            { label: 'File', items: ['New Window', 'Save As...', 'Print'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Refresh', 'Stop Loading'] },
+            { label: 'Help', items: ['About The Internet', 'Dial-Up Help'] },
+          ]}
           statusBarText="Internet Explorer 5.0 · Connected at 56,000 bps"
         >
           <InternetExplorer 
@@ -391,6 +451,7 @@ export default function App() {
           isOpen={getWindow('macos').isOpen}
           isMinimized={getWindow('macos').isMinimized}
           isMaximized={getWindow('macos').isMaximized}
+          isFullscreen={getWindow('macos').isFullscreen}
           x={getWindow('macos').x}
           y={getWindow('macos').y}
           width={getWindow('macos').width}
@@ -401,10 +462,11 @@ export default function App() {
           onClose={() => closeWindow('macos')}
           onMinimize={() => minimizeWindow('macos')}
           onMaximize={() => maximizeWindow('macos')}
+          onToggleFullscreen={() => toggleFullscreen('macos')}
           onMove={(x, y) => moveWindow('macos', x, y)}
           menuBar={[
             { label: 'Apple', items: ['About Macintosh', 'Restart System', 'Eject Floppy'] },
-            { label: 'View', items: ['System 7 Classic', 'Mac OS 9 Platinum', 'Aqua Dock'] },
+            { label: 'View', items: ['Full Screen (F11)', 'System 7 Classic', 'Mac OS 9 Platinum', 'Aqua Dock'] },
             { label: 'Help', items: ['Thinking Different', 'Why Not Windows?'] },
           ]}
           statusBarText="Motorola 68040 Emulation · 16MB RAM Allocated · Mac OS 7.5.3"
@@ -422,6 +484,7 @@ export default function App() {
           isOpen={getWindow('self_help').isOpen}
           isMinimized={getWindow('self_help').isMinimized}
           isMaximized={getWindow('self_help').isMaximized}
+          isFullscreen={getWindow('self_help').isFullscreen}
           x={getWindow('self_help').x}
           y={getWindow('self_help').y}
           width={getWindow('self_help').width}
@@ -432,9 +495,11 @@ export default function App() {
           onClose={() => closeWindow('self_help')}
           onMinimize={() => minimizeWindow('self_help')}
           onMaximize={() => maximizeWindow('self_help')}
+          onToggleFullscreen={() => toggleFullscreen('self_help')}
           onMove={(x, y) => moveWindow('self_help', x, y)}
           menuBar={[
             { label: 'File', items: ['New Life Ticket', 'Print Dignity (Failed)', 'Exit Without Growth'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Zoom In', 'Zoom Out'] },
             { label: 'Edit', items: ['Undo Mistakes (Not Supported)', 'Cut Toxic Habits', 'Paste Excuses'] },
             { label: 'Specialists', items: ['Clippy 98', 'Dr. BSOD', 'SysAdmin Karen', 'Defrag Guru'] },
             { label: 'Help', items: ['Why Am I Like This?', 'About Clippy'] },
@@ -459,6 +524,7 @@ export default function App() {
           isOpen={getWindow('games').isOpen}
           isMinimized={getWindow('games').isMinimized}
           isMaximized={getWindow('games').isMaximized}
+          isFullscreen={getWindow('games').isFullscreen}
           x={getWindow('games').x}
           y={getWindow('games').y}
           width={getWindow('games').width}
@@ -469,9 +535,11 @@ export default function App() {
           onClose={() => closeWindow('games')}
           onMinimize={() => minimizeWindow('games')}
           onMaximize={() => maximizeWindow('games')}
+          onToggleFullscreen={() => toggleFullscreen('games')}
           onMove={(x, y) => moveWindow('games', x, y)}
           menuBar={[
             { label: 'Game', items: ['Geometry Dash', 'Block Blast', 'Trauma Sweeper', 'Dopamine Snake', 'Whack-A-Clippy', 'Exit'] },
+            { label: 'View', items: ['Full Screen (F11)'] },
             { label: 'Skill', items: ['Novice (Easy Denial)', 'Expert (Total Panic)'] },
             { label: 'Help', items: ['How to Waste More Time', 'About 98 Games'] },
           ]}
@@ -490,6 +558,7 @@ export default function App() {
           isOpen={getWindow('minecraft').isOpen}
           isMinimized={getWindow('minecraft').isMinimized}
           isMaximized={getWindow('minecraft').isMaximized}
+          isFullscreen={getWindow('minecraft').isFullscreen}
           x={getWindow('minecraft').x}
           y={getWindow('minecraft').y}
           width={getWindow('minecraft').width}
@@ -500,9 +569,11 @@ export default function App() {
           onClose={() => closeWindow('minecraft')}
           onMinimize={() => minimizeWindow('minecraft')}
           onMaximize={() => maximizeWindow('minecraft')}
+          onToggleFullscreen={() => toggleFullscreen('minecraft')}
           onMove={(x, y) => moveWindow('minecraft', x, y)}
           menuBar={[
             { label: 'Launcher', items: ['Launch Game', 'Check for Updates', 'Memory Allocation (16MB)', 'Exit'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Hide Controls'] },
             { label: 'Profile', items: ['Switch User', 'Skin Manager', 'Crash Reports'] },
             { label: 'Help', items: ['How to Touch Grass', 'About Mojang 98'] },
           ]}
@@ -525,6 +596,7 @@ export default function App() {
           isOpen={getWindow('defrag').isOpen}
           isMinimized={getWindow('defrag').isMinimized}
           isMaximized={getWindow('defrag').isMaximized}
+          isFullscreen={getWindow('defrag').isFullscreen}
           x={getWindow('defrag').x}
           y={getWindow('defrag').y}
           width={getWindow('defrag').width}
@@ -535,7 +607,12 @@ export default function App() {
           onClose={() => closeWindow('defrag')}
           onMinimize={() => minimizeWindow('defrag')}
           onMaximize={() => maximizeWindow('defrag')}
+          onToggleFullscreen={() => toggleFullscreen('defrag')}
           onMove={(x, y) => moveWindow('defrag', x, y)}
+          menuBar={[
+            { label: 'Drive', items: ['Select Drive C:', 'Check Errors', 'Stop Defrag'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Legend'] },
+          ]}
           statusBarText="Drive C: 89% Fragmented · Compacting Delusions"
         >
           <EgoDefragmenter />
@@ -551,6 +628,7 @@ export default function App() {
           isOpen={getWindow('task_mgr').isOpen}
           isMinimized={getWindow('task_mgr').isMinimized}
           isMaximized={getWindow('task_mgr').isMaximized}
+          isFullscreen={getWindow('task_mgr').isFullscreen}
           x={getWindow('task_mgr').x}
           y={getWindow('task_mgr').y}
           width={getWindow('task_mgr').width}
@@ -561,7 +639,12 @@ export default function App() {
           onClose={() => closeWindow('task_mgr')}
           onMinimize={() => minimizeWindow('task_mgr')}
           onMaximize={() => maximizeWindow('task_mgr')}
+          onToggleFullscreen={() => toggleFullscreen('task_mgr')}
           onMove={(x, y) => moveWindow('task_mgr', x, y)}
+          menuBar={[
+            { label: 'File', items: ['New Task...', 'Exit'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Refresh Now'] },
+          ]}
           statusBarText="CPU Usage: 99% · 84 Overthinking Threads"
         >
           <LifeTaskManager />
@@ -577,6 +660,7 @@ export default function App() {
           isOpen={getWindow('certificate').isOpen}
           isMinimized={getWindow('certificate').isMinimized}
           isMaximized={getWindow('certificate').isMaximized}
+          isFullscreen={getWindow('certificate').isFullscreen}
           x={getWindow('certificate').x}
           y={getWindow('certificate').y}
           width={getWindow('certificate').width}
@@ -587,7 +671,12 @@ export default function App() {
           onClose={() => closeWindow('certificate')}
           onMinimize={() => minimizeWindow('certificate')}
           onMaximize={() => maximizeWindow('certificate')}
+          onToggleFullscreen={() => toggleFullscreen('certificate')}
           onMove={(x, y) => moveWindow('certificate', x, y)}
+          menuBar={[
+            { label: 'Certificate', items: ['Print Certificate', 'Frame In Mediocrity'] },
+            { label: 'View', items: ['Full Screen (F11)'] },
+          ]}
           statusBarText="Certified Sub-Par Performance · Ready to Print"
         >
           <FailureCertificateWindow initialProblem={certificateProblemText} />
@@ -603,6 +692,7 @@ export default function App() {
           isOpen={getWindow('recycle_bin').isOpen}
           isMinimized={getWindow('recycle_bin').isMinimized}
           isMaximized={getWindow('recycle_bin').isMaximized}
+          isFullscreen={getWindow('recycle_bin').isFullscreen}
           x={getWindow('recycle_bin').x}
           y={getWindow('recycle_bin').y}
           width={getWindow('recycle_bin').width}
@@ -613,7 +703,12 @@ export default function App() {
           onClose={() => closeWindow('recycle_bin')}
           onMinimize={() => minimizeWindow('recycle_bin')}
           onMaximize={() => maximizeWindow('recycle_bin')}
+          onToggleFullscreen={() => toggleFullscreen('recycle_bin')}
           onMove={(x, y) => moveWindow('recycle_bin', x, y)}
+          menuBar={[
+            { label: 'File', items: ['Empty Recycle Bin', 'Close'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Large Icons', 'Details'] },
+          ]}
           statusBarText="7 Regrets in Bin · 5.2 GB Wasted Potential"
         >
           <RecycleBinWindow />
@@ -629,6 +724,7 @@ export default function App() {
           isOpen={getWindow('readme').isOpen}
           isMinimized={getWindow('readme').isMinimized}
           isMaximized={getWindow('readme').isMaximized}
+          isFullscreen={getWindow('readme').isFullscreen}
           x={getWindow('readme').x}
           y={getWindow('readme').y}
           width={getWindow('readme').width}
@@ -639,10 +735,12 @@ export default function App() {
           onClose={() => closeWindow('readme')}
           onMinimize={() => minimizeWindow('readme')}
           onMaximize={() => maximizeWindow('readme')}
+          onToggleFullscreen={() => toggleFullscreen('readme')}
           onMove={(x, y) => moveWindow('readme', x, y)}
           menuBar={[
             { label: 'File', items: ['New Cry', 'Open Trauma...', 'Save Excuses', 'Exit'] },
             { label: 'Edit', items: ['Undo Past Decisions', 'Select All Regrets'] },
+            { label: 'View', items: ['Full Screen (F11)', 'Word Wrap'] },
             { label: 'Search', items: ['Find Purpose...'] },
           ]}
           statusBarText="Line 42, Col 1 · Ready"
@@ -660,6 +758,7 @@ export default function App() {
           isOpen={getWindow('settings').isOpen}
           isMinimized={getWindow('settings').isMinimized}
           isMaximized={getWindow('settings').isMaximized}
+          isFullscreen={getWindow('settings').isFullscreen}
           x={getWindow('settings').x}
           y={getWindow('settings').y}
           width={getWindow('settings').width}
@@ -670,7 +769,12 @@ export default function App() {
           onClose={() => closeWindow('settings')}
           onMinimize={() => minimizeWindow('settings')}
           onMaximize={() => maximizeWindow('settings')}
+          onToggleFullscreen={() => toggleFullscreen('settings')}
           onMove={(x, y) => moveWindow('settings', x, y)}
+          menuBar={[
+            { label: 'Properties', items: ['Apply Settings', 'Reset to Defaults'] },
+            { label: 'View', items: ['Full Screen (F11)'] },
+          ]}
           statusBarText="Display Properties · Retro Windows 98"
         >
           <SettingsWindow

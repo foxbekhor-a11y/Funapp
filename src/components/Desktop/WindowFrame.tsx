@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Minus, Square, X, Copy } from 'lucide-react';
+import { Minus, Square, X, Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { sounds } from '../../utils/soundEffects';
 
 interface WindowFrameProps {
@@ -9,6 +9,7 @@ interface WindowFrameProps {
   isOpen: boolean;
   isMinimized: boolean;
   isMaximized: boolean;
+  isFullscreen?: boolean;
   x: number;
   y: number;
   width: number;
@@ -19,6 +20,7 @@ interface WindowFrameProps {
   onClose: () => void;
   onMinimize: () => void;
   onMaximize: () => void;
+  onToggleFullscreen?: () => void;
   onMove: (x: number, y: number) => void;
   children: React.ReactNode;
   menuBar?: Array<{ label: string; items?: string[] }>;
@@ -31,6 +33,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
   isOpen,
   isMinimized,
   isMaximized,
+  isFullscreen = false,
   x,
   y,
   width,
@@ -41,6 +44,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
   onClose,
   onMinimize,
   onMaximize,
+  onToggleFullscreen,
   onMove,
   children,
   menuBar,
@@ -52,7 +56,7 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || isMaximized) return;
+      if (!isDragging || isMaximized || isFullscreen) return;
       const newX = Math.max(0, Math.min(window.innerWidth - 120, e.clientX - dragOffset.current.x));
       const newY = Math.max(0, Math.min(window.innerHeight - 80, e.clientY - dragOffset.current.y));
       onMove(newX, newY);
@@ -71,13 +75,13 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isMaximized, onMove]);
+  }, [isDragging, isMaximized, isFullscreen, onMove]);
 
   if (!isOpen || isMinimized) return null;
 
   const handleTitleMouseDown = (e: React.MouseEvent) => {
     onFocus();
-    if (isMaximized) return;
+    if (isMaximized || isFullscreen) return;
     setIsDragging(true);
     dragOffset.current = {
       x: e.clientX - x,
@@ -85,7 +89,16 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
     };
   };
 
-  const style: React.CSSProperties = isMaximized
+  const style: React.CSSProperties = isFullscreen
+    ? {
+        left: 0,
+        top: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 100000,
+        borderRadius: 0,
+      }
+    : isMaximized
     ? {
         left: 0,
         top: 0,
@@ -107,12 +120,30 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
       style={style}
       className={`fixed flex flex-col bg-[#c0c0c0] win98-raised shadow-xl select-none font-win98 text-xs text-black transition-none overflow-hidden ${
         isActive ? 'ring-1 ring-blue-900/30' : 'opacity-95'
-      }`}
+      } ${isFullscreen ? 'border-none win98-raised-none' : ''}`}
     >
+      {/* Floating Hover Exit Banner when in Fullscreen */}
+      {isFullscreen && onToggleFullscreen && (
+        <div 
+          onClick={onToggleFullscreen}
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-[100002] cursor-pointer bg-black/85 hover:bg-black text-white text-[11px] font-sans px-3.5 py-1 rounded-b-md shadow-2xl flex items-center gap-2 border border-t-0 border-white/40 opacity-30 hover:opacity-100 transition-opacity"
+          title="Click to Exit Full Screen (or press ESC)"
+        >
+          <Minimize2 size={12} className="text-yellow-400" />
+          <span>Full Screen Mode · Click or press <kbd className="px-1 bg-white/20 rounded text-[9px] font-mono">ESC</kbd> to restore</span>
+        </div>
+      )}
+
       {/* Title Bar */}
       <div
         onMouseDown={handleTitleMouseDown}
-        onDoubleClick={onMaximize}
+        onDoubleClick={() => {
+          if (onToggleFullscreen) {
+            onToggleFullscreen();
+          } else {
+            onMaximize();
+          }
+        }}
         className={`flex items-center justify-between px-1.5 py-1 cursor-grab active:cursor-grabbing font-bold text-white select-none ${
           isActive ? 'win98-titlebar' : 'win98-titlebar-inactive'
         }`}
@@ -120,6 +151,11 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
         <div className="flex items-center gap-1.5 truncate">
           {icon && <span className="shrink-0">{icon}</span>}
           <span className="truncate tracking-wide text-xs">{title}</span>
+          {isFullscreen && (
+            <span className="text-[10px] font-normal bg-blue-800/80 px-1.5 py-0.2 rounded border border-blue-400/60 ml-1">
+              [Full Screen]
+            </span>
+          )}
         </div>
 
         {/* Window Controls */}
@@ -134,16 +170,40 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
           >
             <Minus size={10} strokeWidth={3} className="mt-1" />
           </button>
+
+          {/* Maximize / Restore Desktop Button */}
           <button
             onClick={() => {
               sounds.playClick();
               onMaximize();
             }}
-            title={isMaximized ? "Restore" : "Maximize"}
+            title={isMaximized ? "Restore Window" : "Maximize (Desktop)"}
             className="w-4 h-4 bg-[#c0c0c0] win98-raised win98-btn flex items-center justify-center text-black hover:bg-[#d4d4d4]"
           >
             {isMaximized ? <Copy size={9} strokeWidth={2.5} /> : <Square size={9} strokeWidth={2.5} />}
           </button>
+
+          {/* Full Screen Toggle Button */}
+          {onToggleFullscreen && (
+            <button
+              onClick={() => {
+                sounds.playClick();
+                onToggleFullscreen();
+              }}
+              title={isFullscreen ? "Exit Fullscreen (Esc / F11)" : "Full Screen (F11)"}
+              className={`w-4 h-4 bg-[#c0c0c0] win98-raised win98-btn flex items-center justify-center text-black hover:bg-[#d4d4d4] ${
+                isFullscreen ? 'bg-cyan-200' : ''
+              }`}
+            >
+              {isFullscreen ? (
+                <Minimize2 size={9} strokeWidth={2.5} className="text-blue-900" />
+              ) : (
+                <Maximize2 size={9} strokeWidth={2.5} />
+              )}
+            </button>
+          )}
+
+          {/* Close Button */}
           <button
             onClick={() => {
               sounds.playClick();
@@ -182,6 +242,9 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
                       onClick={() => {
                         sounds.playClick();
                         setActiveMenu(null);
+                        if (item.toLowerCase().includes('full screen') && onToggleFullscreen) {
+                          onToggleFullscreen();
+                        }
                       }}
                       className="px-3 py-1 hover:bg-[#000080] hover:text-white cursor-pointer"
                     >

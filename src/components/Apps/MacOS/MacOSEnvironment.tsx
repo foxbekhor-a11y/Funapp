@@ -33,6 +33,7 @@ interface InnerWindow {
   id: InnerAppId;
   title: string;
   isOpen: boolean;
+  isFullscreen?: boolean;
   x: number;
   y: number;
   width: number;
@@ -343,7 +344,40 @@ export const MacOSEnvironment: React.FC = () => {
     }
   };
 
+  const toggleFullscreenInnerWindow = (id: InnerAppId) => {
+    sounds.playClick();
+    const nextZ = highestInnerZ + 2;
+    setHighestInnerZ(nextZ);
+    setWindows((prev) =>
+      prev.map((w) =>
+        w.id === id ? { ...w, isFullscreen: !w.isFullscreen, zIndex: nextZ } : w
+      )
+    );
+    setActiveInnerWindow(id);
+  };
+
   const getWindow = (id: InnerAppId) => windows.find((w) => w.id === id)!;
+
+  const getInnerWindowStyle = (id: InnerAppId): React.CSSProperties => {
+    const win = getWindow(id);
+    if (win.isFullscreen) {
+      return {
+        left: 0,
+        top: 24,
+        width: '100%',
+        height: 'calc(100% - 24px)',
+        zIndex: win.zIndex + 20,
+      };
+    }
+    return {
+      left: `${win.x}px`,
+      top: `${win.y}px`,
+      width: `${win.width}px`,
+      height: `${win.height}px`,
+      zIndex: win.zIndex,
+    };
+  };
+
   const currentBgClass = DESKTOP_PATTERNS.find((p) => p.id === selectedPattern)?.bg || 'bg-[#7f7f7f]';
 
   return (
@@ -578,6 +612,22 @@ export const MacOSEnvironment: React.FC = () => {
                       <span>macOS Aqua Dock</span>
                       {theme === 'aqua' && <span>✓</span>}
                     </button>
+                    <div className="border-t border-black/30 my-1" />
+                    <button
+                      onClick={() => {
+                        sounds.playClick();
+                        if (activeInnerWindow) {
+                          toggleFullscreenInnerWindow(activeInnerWindow);
+                        } else {
+                          toggleFullscreenInnerWindow('win11');
+                        }
+                        setActiveMenu(null);
+                      }}
+                      className="w-full text-left px-3 py-1 hover:bg-black hover:text-white flex items-center justify-between font-bold"
+                    >
+                      <span>Toggle Window Full Screen</span>
+                      <span>⤢</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -710,13 +760,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('siri')}
                 className="absolute bg-[#1c1924] text-white border-2 border-purple-500 shadow-2xl rounded-lg flex flex-col overflow-hidden"
-                style={{
-                  left: `${getWindow('siri').x}px`,
-                  top: `${getWindow('siri').y}px`,
-                  width: `${getWindow('siri').width}px`,
-                  height: `${getWindow('siri').height}px`,
-                  zIndex: getWindow('siri').zIndex,
-                }}
+                style={getInnerWindowStyle('siri')}
               >
                 {/* Siri Header */}
                 <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-purple-900 border-b border-purple-800/80 px-3 py-1.5 flex items-center justify-between">
@@ -727,8 +771,19 @@ export const MacOSEnvironment: React.FC = () => {
                         closeInnerWindow('siri');
                       }}
                       className="w-3.5 h-3.5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-[8px] text-black font-bold"
+                      title="Close Siri"
                     >
                       ✕
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFullscreenInnerWindow('siri');
+                      }}
+                      className="w-3.5 h-3.5 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center text-[7px] text-black font-bold"
+                      title={getWindow('siri').isFullscreen ? "Restore Siri Window" : "Full Screen Siri (Mac OS)"}
+                    >
+                      {getWindow('siri').isFullscreen ? '⤡' : '⤢'}
                     </button>
                     <span className="font-bold text-xs text-purple-200 flex items-center gap-1">
                       <Sparkles size={12} className="text-purple-400" />
@@ -827,13 +882,7 @@ export const MacOSEnvironment: React.FC = () => {
                 className={`absolute bg-[#f5f4ed] border-2 border-black shadow-2xl rounded-xs flex flex-col ${
                   theme === 'macos9' ? 'border-[#333]' : ''
                 }`}
-                style={{
-                  left: `${getWindow('simpletext').x}px`,
-                  top: `${getWindow('simpletext').y}px`,
-                  width: `${getWindow('simpletext').width}px`,
-                  height: `${getWindow('simpletext').height}px`,
-                  zIndex: getWindow('simpletext').zIndex,
-                }}
+                style={getInnerWindowStyle('simpletext')}
               >
                 <div className="bg-[#e4e2d8] border-b border-black px-2 py-1 flex items-center justify-between font-sans text-xs">
                   <div className="flex items-center gap-2">
@@ -848,9 +897,16 @@ export const MacOSEnvironment: React.FC = () => {
                     </button>
                     <span className="font-bold truncate text-[11px]">{getWindow('simpletext').title}</span>
                   </div>
-                  <div className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-black" />
-                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('simpletext');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('simpletext').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('simpletext').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
                 </div>
 
                 <div className="flex-1 p-2 flex flex-col">
@@ -872,13 +928,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('paint')}
                 className="absolute bg-[#e8e6dc] border-2 border-black shadow-2xl rounded-xs flex flex-col"
-                style={{
-                  left: `${getWindow('paint').x}px`,
-                  top: `${getWindow('paint').y}px`,
-                  width: `${getWindow('paint').width}px`,
-                  height: `${getWindow('paint').height}px`,
-                  zIndex: getWindow('paint').zIndex,
-                }}
+                style={getInnerWindowStyle('paint')}
               >
                 <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -893,9 +943,21 @@ export const MacOSEnvironment: React.FC = () => {
                     </button>
                     <span className="font-bold text-[11px]">MacPaint 1.0 (Bill Atkinson)</span>
                   </div>
-                  <button onClick={clearCanvas} className="text-[10px] bg-white border border-black px-1.5 py-0.2">
-                    Clear
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={clearCanvas} className="text-[10px] bg-white border border-black px-1.5 py-0.2">
+                      Clear
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFullscreenInnerWindow('paint');
+                      }}
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                      title={getWindow('paint').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                    >
+                      <div className={getWindow('paint').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 flex p-2 gap-2">
@@ -943,13 +1005,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('speech')}
                 className="absolute bg-[#e8e6dc] border-2 border-black shadow-2xl rounded-xs flex flex-col"
-                style={{
-                  left: `${getWindow('speech').x}px`,
-                  top: `${getWindow('speech').y}px`,
-                  width: `${getWindow('speech').width}px`,
-                  height: `${getWindow('speech').height}px`,
-                  zIndex: getWindow('speech').zIndex,
-                }}
+                style={getInnerWindowStyle('speech')}
               >
                 <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -958,12 +1014,22 @@ export const MacOSEnvironment: React.FC = () => {
                         e.stopPropagation();
                         closeInnerWindow('speech');
                       }}
-                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center"
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
                     >
                       <Square size={8} />
                     </button>
                     <span className="font-bold text-[11px]">MacinTalk 3.0 Speech</span>
                   </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('speech');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('speech').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('speech').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
                 </div>
 
                 <div className="p-3 flex-1 flex flex-col justify-between text-xs">
@@ -1006,13 +1072,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('calculator')}
                 className="absolute bg-[#e8e6dc] border-2 border-black shadow-2xl rounded-xs flex flex-col"
-                style={{
-                  left: `${getWindow('calculator').x}px`,
-                  top: `${getWindow('calculator').y}px`,
-                  width: `${getWindow('calculator').width}px`,
-                  height: `${getWindow('calculator').height}px`,
-                  zIndex: getWindow('calculator').zIndex,
-                }}
+                style={getInnerWindowStyle('calculator')}
               >
                 <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1021,12 +1081,22 @@ export const MacOSEnvironment: React.FC = () => {
                         e.stopPropagation();
                         closeInnerWindow('calculator');
                       }}
-                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center"
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
                     >
                       <Square size={8} />
                     </button>
                     <span className="font-bold text-[11px]">Calculator</span>
                   </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('calculator');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('calculator').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('calculator').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
                 </div>
 
                 <div className="p-3 flex-1 flex flex-col justify-between">
@@ -1056,13 +1126,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('about')}
                 className="absolute bg-[#eae8de] border-2 border-black shadow-2xl rounded-xs flex flex-col"
-                style={{
-                  left: `${getWindow('about').x}px`,
-                  top: `${getWindow('about').y}px`,
-                  width: `${getWindow('about').width}px`,
-                  height: `${getWindow('about').height}px`,
-                  zIndex: getWindow('about').zIndex,
-                }}
+                style={getInnerWindowStyle('about')}
               >
                 <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1071,12 +1135,22 @@ export const MacOSEnvironment: React.FC = () => {
                         e.stopPropagation();
                         closeInnerWindow('about');
                       }}
-                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center"
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
                     >
                       <Square size={8} />
                     </button>
                     <span className="font-bold text-[11px]">About This Macintosh</span>
                   </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('about');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('about').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('about').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
                 </div>
 
                 <div className="p-4 flex-1 flex flex-col justify-between text-xs">
@@ -1120,13 +1194,7 @@ export const MacOSEnvironment: React.FC = () => {
               <div
                 onClick={() => focusInnerWindow('patterns')}
                 className="absolute bg-[#eae8de] border-2 border-black shadow-2xl rounded-xs flex flex-col"
-                style={{
-                  left: `${getWindow('patterns').x}px`,
-                  top: `${getWindow('patterns').y}px`,
-                  width: `${getWindow('patterns').width}px`,
-                  height: `${getWindow('patterns').height}px`,
-                  zIndex: getWindow('patterns').zIndex,
-                }}
+                style={getInnerWindowStyle('patterns')}
               >
                 <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1135,12 +1203,22 @@ export const MacOSEnvironment: React.FC = () => {
                         e.stopPropagation();
                         closeInnerWindow('patterns');
                       }}
-                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center"
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
                     >
                       <Square size={8} />
                     </button>
                     <span className="font-bold text-[11px]">Desktop Patterns</span>
                   </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('patterns');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('patterns').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('patterns').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
                 </div>
 
                 <div className="p-3 flex-1 flex flex-col justify-between text-xs">
@@ -1172,18 +1250,68 @@ export const MacOSEnvironment: React.FC = () => {
               </div>
             )}
 
+            {/* 6.2. MACINTOSH HD FINDER WINDOW */}
+            {getWindow('hd').isOpen && (
+              <div
+                onClick={() => focusInnerWindow('hd')}
+                className="absolute bg-[#eae8de] border-2 border-black shadow-2xl rounded-xs flex flex-col"
+                style={getInnerWindowStyle('hd')}
+              >
+                <div className="bg-[#dcd9ce] border-b border-black px-2 py-1 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeInnerWindow('hd');
+                      }}
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    >
+                      <Square size={8} />
+                    </button>
+                    <span className="font-bold text-[11px]">Macintosh HD (1.4 GB available)</span>
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFullscreenInnerWindow('hd');
+                    }}
+                    className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                    title={getWindow('hd').isFullscreen ? "Restore Window" : "Full Screen Window"}
+                  >
+                    <div className={getWindow('hd').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                  </button>
+                </div>
+                <div className="p-3 grid grid-cols-3 gap-3 content-start flex-1 overflow-auto bg-white">
+                  {[
+                    { name: 'System Folder', icon: '📁', action: () => openInnerWindow('about') },
+                    { name: 'TeachText', icon: '📝', action: () => openInnerWindow('simpletext') },
+                    { name: 'Virtual PC', icon: '💻', action: () => openInnerWindow('win11') },
+                    { name: 'Siri AI', icon: '✨', action: () => openInnerWindow('siri') },
+                    { name: 'MacPaint', icon: '🎨', action: () => openInnerWindow('paint') },
+                    { name: 'Unfulfilled Dreams', icon: '🗑️', action: emptyTrash },
+                  ].map((item) => (
+                    <div
+                      key={item.name}
+                      onClick={() => {
+                        sounds.playClick();
+                        item.action();
+                      }}
+                      className="flex flex-col items-center text-center p-2 hover:bg-black/10 rounded cursor-pointer"
+                    >
+                      <span className="text-2xl mb-1">{item.icon}</span>
+                      <span className="text-[11px] font-bold text-black">{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 6.5. WINDOWS 11 VIRTUAL MACHINE WINDOW */}
             {getWindow('win11').isOpen && (
               <div
                 onClick={() => focusInnerWindow('win11')}
                 className="absolute bg-[#0c1829] border-2 border-black shadow-2xl rounded-xs flex flex-col overflow-hidden"
-                style={{
-                  left: `${getWindow('win11').x}px`,
-                  top: `${getWindow('win11').y}px`,
-                  width: `${getWindow('win11').width}px`,
-                  height: `${getWindow('win11').height}px`,
-                  zIndex: getWindow('win11').zIndex,
-                }}
+                style={getInnerWindowStyle('win11')}
               >
                 {/* Classic Mac OS Title Bar wrapping Windows 11 */}
                 <div className="bg-[#e4e2d8] border-b border-black px-2 py-1 flex items-center justify-between font-sans text-xs shrink-0 select-none">
@@ -1210,9 +1338,16 @@ export const MacOSEnvironment: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] text-gray-700 font-mono">
                     <span className="bg-white/80 px-1 border border-black/30 rounded-xs text-[9px]">x86-64 VM</span>
-                    <div className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-black" />
-                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFullscreenInnerWindow('win11');
+                      }}
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                      title={getWindow('win11').isFullscreen ? "Restore Window" : "Full Screen Virtual PC"}
+                    >
+                      <div className={getWindow('win11').isFullscreen ? "w-2.5 h-2.5 border border-black" : "w-1.5 h-1.5 bg-black"} />
+                    </button>
                   </div>
                 </div>
 

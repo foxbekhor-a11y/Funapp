@@ -488,6 +488,30 @@ class SoundManager {
     } catch (e) {}
   }
 
+  // Bright Google ChromeOS startup marimba chime (G4, C5, E5, G5)
+  public playChromeChime() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.getAudioContext();
+      const now = ctx.currentTime;
+      const notes = [392.0, 523.25, 659.25, 783.99];
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const startTime = now + idx * 0.08;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.12, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.38);
+      });
+    } catch (e) {}
+  }
+
   // Synthesize text speech with vintage robotic pitch
   public speak(text: string, persona: string = 'clippy') {
     if (!this.speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;

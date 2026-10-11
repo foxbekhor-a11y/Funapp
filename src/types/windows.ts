@@ -19,6 +19,7 @@ export interface WindowState {
   isOpen: boolean;
   isMinimized: boolean;
   isMaximized: boolean;
+  isFullscreen?: boolean;
   x: number;
   y: number;
   width: number;

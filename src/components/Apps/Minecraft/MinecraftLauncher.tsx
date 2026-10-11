@@ -25,7 +25,9 @@ import {
   FolderOpen,
   Check,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { sounds } from '../../../utils/soundEffects';
 import { 

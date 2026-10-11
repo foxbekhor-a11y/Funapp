@@ -8,8 +8,10 @@ import {
   Sparkles, 
   Power, 
   Maximize2, 
+  Minimize2,
   Minus, 
   X, 
+  Square,
   Wifi, 
   Volume2, 
   Battery, 
@@ -24,8 +26,9 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { sounds } from '../../../utils/soundEffects';
+import { ChromeOSEnvironment } from './ChromeOSEnvironment';
 
-type Win11App = 'copilot' | 'settings' | 'notepad' | 'explorer';
+type Win11App = 'copilot' | 'settings' | 'notepad' | 'explorer' | 'chromeos';
 
 interface CopilotMessage {
   id: string;
@@ -38,8 +41,14 @@ export const Windows11Environment: React.FC = () => {
   const [isBooting, setIsBooting] = useState<boolean>(true);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState<boolean>(false);
   const [activeApp, setActiveApp] = useState<Win11App | null>('copilot');
+  const [fullscreenApp, setFullscreenApp] = useState<Win11App | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('11:47 AM');
+
+  const toggleFullscreenApp = (app: Win11App) => {
+    sounds.playClick();
+    setFullscreenApp((prev) => (prev === app ? null : app));
+  };
 
   // Copilot State
   const [copilotInput, setCopilotInput] = useState<string>('');
@@ -215,11 +224,32 @@ export const Windows11Environment: React.FC = () => {
                 </div>
                 <span className="text-[10px] text-gray-200 drop-shadow line-clamp-1">Settings</span>
               </div>
+
+              <div 
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveApp('chromeos');
+                }}
+                className="flex flex-col items-center gap-1 cursor-pointer group w-16 text-center"
+              >
+                <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform backdrop-blur-md">
+                  <div className="w-5 h-5 rounded-full border-2 border-[#ea4335] bg-[#4285f4] flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white flex items-center justify-center">
+                      <div className="w-1 h-1 rounded-full bg-[#4285f4]" />
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-medium drop-shadow line-clamp-1">ChromeOS</span>
+              </div>
             </div>
 
             {/* 1. COPILOT SIDEBAR / WINDOW */}
             {activeApp === 'copilot' && (
-              <div className="absolute top-2 right-2 bottom-2 w-72 bg-[#1f1f23]/90 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in">
+              <div className={`${
+                fullscreenApp === 'copilot'
+                  ? 'absolute inset-0 bg-[#1f1f23] border-0 rounded-none'
+                  : 'absolute top-2 right-2 bottom-2 w-72 bg-[#1f1f23]/90 backdrop-blur-xl border border-white/15 rounded-xl'
+              } shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in`}>
                 {/* Copilot Header */}
                 <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between bg-black/20">
                   <div className="flex items-center gap-2">
@@ -227,13 +257,29 @@ export const Windows11Environment: React.FC = () => {
                       <Sparkles size={11} className="text-white" />
                     </div>
                     <span className="font-bold text-xs text-white">Microsoft Copilot</span>
+                    {fullscreenApp === 'copilot' && (
+                      <span className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded border border-blue-400/40">Full Screen</span>
+                    )}
                   </div>
-                  <button 
-                    onClick={() => setActiveApp(null)}
-                    className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
-                  >
-                    <X size={13} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => toggleFullscreenApp('copilot')}
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
+                      title={fullscreenApp === 'copilot' ? "Restore Window" : "Full Screen Window"}
+                    >
+                      {fullscreenApp === 'copilot' ? <Minimize2 size={12} /> : <Square size={11} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveApp(null);
+                        setFullscreenApp(null);
+                      }}
+                      className="p-1 hover:bg-red-600 hover:text-white rounded text-gray-400"
+                      title="Close"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Copilot Messages */}
@@ -305,18 +351,35 @@ export const Windows11Environment: React.FC = () => {
 
             {/* 2. NOTEPAD WINDOW */}
             {activeApp === 'notepad' && (
-              <div className="absolute top-6 left-20 w-80 h-64 bg-[#202020]/95 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in">
+              <div className={`${
+                fullscreenApp === 'notepad'
+                  ? 'absolute inset-0 bg-[#202020] border-0 rounded-none'
+                  : 'absolute top-6 left-20 w-80 h-64 bg-[#202020]/95 backdrop-blur-xl border border-white/15 rounded-xl'
+              } shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in`}>
                 <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between bg-black/30">
                   <div className="flex items-center gap-2">
                     <FileText size={14} className="text-blue-400" />
                     <span className="font-bold text-xs text-gray-200">Notepad - InceptionLog.txt</span>
                   </div>
-                  <button 
-                    onClick={() => setActiveApp(null)}
-                    className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
-                  >
-                    <X size={13} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => toggleFullscreenApp('notepad')}
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
+                      title={fullscreenApp === 'notepad' ? "Restore Window" : "Full Screen Window"}
+                    >
+                      {fullscreenApp === 'notepad' ? <Minimize2 size={12} /> : <Square size={11} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveApp(null);
+                        setFullscreenApp(null);
+                      }}
+                      className="p-1 hover:bg-red-600 hover:text-white rounded text-gray-400"
+                      title="Close"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 p-2 flex flex-col">
@@ -335,18 +398,35 @@ export const Windows11Environment: React.FC = () => {
 
             {/* 3. SETTINGS WINDOW */}
             {activeApp === 'settings' && (
-              <div className="absolute top-6 left-24 w-88 h-72 bg-[#202024]/95 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in">
+              <div className={`${
+                fullscreenApp === 'settings'
+                  ? 'absolute inset-0 bg-[#202024] border-0 rounded-none'
+                  : 'absolute top-6 left-24 w-88 h-72 bg-[#202024]/95 backdrop-blur-xl border border-white/15 rounded-xl'
+              } shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in`}>
                 <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between bg-black/30">
                   <div className="flex items-center gap-2">
                     <SettingsIcon size={14} className="text-gray-300" />
                     <span className="font-bold text-xs text-gray-200">Settings - System &gt; About</span>
                   </div>
-                  <button 
-                    onClick={() => setActiveApp(null)}
-                    className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
-                  >
-                    <X size={13} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => toggleFullscreenApp('settings')}
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
+                      title={fullscreenApp === 'settings' ? "Restore Window" : "Full Screen Window"}
+                    >
+                      {fullscreenApp === 'settings' ? <Minimize2 size={12} /> : <Square size={11} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveApp(null);
+                        setFullscreenApp(null);
+                      }}
+                      className="p-1 hover:bg-red-600 hover:text-white rounded text-gray-400"
+                      title="Close"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
@@ -382,18 +462,35 @@ export const Windows11Environment: React.FC = () => {
 
             {/* 4. EXPLORER WINDOW */}
             {activeApp === 'explorer' && (
-              <div className="absolute top-8 left-20 w-80 h-64 bg-[#202020]/95 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in">
+              <div className={`${
+                fullscreenApp === 'explorer'
+                  ? 'absolute inset-0 bg-[#202020] border-0 rounded-none'
+                  : 'absolute top-8 left-20 w-80 h-64 bg-[#202020]/95 backdrop-blur-xl border border-white/15 rounded-xl'
+              } shadow-2xl flex flex-col z-20 overflow-hidden animate-fade-in`}>
                 <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between bg-black/30">
                   <div className="flex items-center gap-2">
                     <Folder size={14} className="text-amber-400" />
                     <span className="font-bold text-xs text-gray-200">File Explorer - This PC</span>
                   </div>
-                  <button 
-                    onClick={() => setActiveApp(null)}
-                    className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
-                  >
-                    <X size={13} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => toggleFullscreenApp('explorer')}
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
+                      title={fullscreenApp === 'explorer' ? "Restore Window" : "Full Screen Window"}
+                    >
+                      {fullscreenApp === 'explorer' ? <Minimize2 size={12} /> : <Square size={11} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveApp(null);
+                        setFullscreenApp(null);
+                      }}
+                      className="p-1 hover:bg-red-600 hover:text-white rounded text-gray-400"
+                      title="Close"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex-1 p-3 grid grid-cols-3 gap-2 content-start">
@@ -414,6 +511,54 @@ export const Windows11Environment: React.FC = () => {
                       <span className="text-[9px] text-gray-400">{folder.items}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. CHROMEOS WINDOW (NESTED 4TH LEVEL) */}
+            {activeApp === 'chromeos' && (
+              <div className={`${
+                fullscreenApp === 'chromeos'
+                  ? 'absolute inset-0 bg-[#1b1c1e] border-0 rounded-none'
+                  : 'absolute inset-1 bg-[#1b1c1e] border-2 border-white/20 rounded-xl'
+              } shadow-2xl flex flex-col z-30 overflow-hidden animate-fade-in`}>
+                {/* Windows 11 Modern Acrylic Title Bar */}
+                <div className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between bg-black/60 select-none">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full border border-[#ea4335] bg-[#4285f4] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    </div>
+                    <span className="font-bold text-xs text-gray-200">
+                      Windows Subsystem for ChromeOS (Layer 4 Inception)
+                    </span>
+                    <span className="bg-yellow-500/20 text-yellow-300 text-[9px] px-1.5 py-0.2 rounded border border-yellow-500/40 font-mono">
+                      Level 4
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <button 
+                      onClick={() => toggleFullscreenApp('chromeos')} 
+                      className="p-1 hover:bg-white/10 rounded hover:text-white"
+                      title={fullscreenApp === 'chromeos' ? "Restore Window" : "Full Screen Window"}
+                    >
+                      {fullscreenApp === 'chromeos' ? <Minimize2 size={12} /> : <Square size={10} />}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setActiveApp(null);
+                        setFullscreenApp(null);
+                      }} 
+                      className="p-1 hover:bg-red-600 hover:text-white rounded"
+                      title="Close"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* ChromeOS Inner Environment */}
+                <div className="flex-1 overflow-hidden relative">
+                  <ChromeOSEnvironment />
                 </div>
               </div>
             )}
@@ -444,9 +589,10 @@ export const Windows11Environment: React.FC = () => {
                   <button className="text-blue-400 hover:underline">All apps &gt;</button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                <div className="grid grid-cols-5 gap-1.5 text-center text-xs">
                   {[
                     { id: 'copilot', name: 'Copilot', icon: <Sparkles size={18} className="text-cyan-300" /> },
+                    { id: 'chromeos', name: 'ChromeOS', icon: <div className="w-5 h-5 rounded-full border border-[#ea4335] bg-[#4285f4] flex items-center justify-center"><div className="w-2 h-2 rounded-full bg-white flex items-center justify-center"><div className="w-1 h-1 rounded-full bg-[#4285f4]" /></div></div> },
                     { id: 'explorer', name: 'Explorer', icon: <Folder size={18} className="text-amber-400" /> },
                     { id: 'notepad', name: 'Notepad', icon: <FileText size={18} className="text-blue-300" /> },
                     { id: 'settings', name: 'Settings', icon: <SettingsIcon size={18} className="text-gray-300" /> },
@@ -458,12 +604,12 @@ export const Windows11Environment: React.FC = () => {
                         setActiveApp(app.id as Win11App);
                         setIsStartMenuOpen(false);
                       }}
-                      className="p-2 hover:bg-white/10 rounded-xl flex flex-col items-center gap-1 transition-colors"
+                      className="p-1.5 hover:bg-white/10 rounded-xl flex flex-col items-center gap-1 transition-colors"
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                         {app.icon}
                       </div>
-                      <span className="text-[10px] text-gray-200">{app.name}</span>
+                      <span className="text-[10px] text-gray-200 truncate w-full">{app.name}</span>
                     </button>
                   ))}
                 </div>
@@ -563,6 +709,24 @@ export const Windows11Environment: React.FC = () => {
                 title="Microsoft Copilot"
               >
                 <Sparkles size={16} className="text-cyan-400" />
+              </button>
+
+              {/* ChromeOS Icon */}
+              <button
+                onClick={() => {
+                  sounds.playClick();
+                  setActiveApp('chromeos');
+                }}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  activeApp === 'chromeos' ? 'bg-white/20 border-b-2 border-[#ea4335]' : 'hover:bg-white/10'
+                }`}
+                title="ChromeOS Environment"
+              >
+                <div className="w-4 h-4 rounded-full border-2 border-[#ea4335] bg-[#4285f4] flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white flex items-center justify-center">
+                    <div className="w-0.5 h-0.5 rounded-full bg-[#4285f4]" />
+                  </div>
+                </div>
               </button>
 
               {/* File Explorer Icon */}
