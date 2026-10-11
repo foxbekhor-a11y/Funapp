@@ -43,6 +43,15 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({ onOpenApp, onOpenBSO
       ),
     },
     {
+      id: 'macos',
+      title: 'Macintosh',
+      icon: (
+        <div className="w-9 h-9 bg-[#f4efe1] win98-raised flex flex-col items-center justify-center rounded-[2px] shadow border border-black/40">
+          <span className="text-xl">🍎</span>
+        </div>
+      ),
+    },
+    {
       id: 'self_help',
       title: 'Emotional Troubleshooter',
       icon: (

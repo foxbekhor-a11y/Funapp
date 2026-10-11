@@ -26,11 +26,25 @@ import { SettingsWindow } from './components/Apps/SettingsWindow';
 import { GamesHub } from './components/Apps/Games/GamesHub';
 import { MinecraftLauncher } from './components/Apps/Minecraft/MinecraftLauncher';
 import { InternetExplorer } from './components/Apps/Browser/InternetExplorer';
+import { MacOSEnvironment } from './components/Apps/MacOS/MacOSEnvironment';
 import { BSODModal } from './components/Apps/BSODModal';
 import { ShutdownDialog } from './components/Desktop/ShutdownDialog';
 import { sounds } from './utils/soundEffects';
 
 const INITIAL_WINDOWS: WindowState[] = [
+  {
+    id: 'macos',
+    title: 'Macintosh System 7.5 - Apple Mac OS Environment',
+    icon: '🍎',
+    isOpen: false,
+    isMinimized: false,
+    isMaximized: false,
+    x: 170,
+    y: 35,
+    width: 660,
+    height: 520,
+    zIndex: 14,
+  },
   {
     id: 'browser',
     title: 'Internet Explorer 5.0 - Yahooligans! 98',
@@ -365,6 +379,37 @@ export default function App() {
               openApp('minecraft');
             }}
           />
+        </WindowFrame>
+      )}
+
+      {/* Macintosh System 7.5 Window */}
+      {getWindow('macos').isOpen && (
+        <WindowFrame
+          id="macos"
+          title={getWindow('macos').title}
+          icon={getWindow('macos').icon}
+          isOpen={getWindow('macos').isOpen}
+          isMinimized={getWindow('macos').isMinimized}
+          isMaximized={getWindow('macos').isMaximized}
+          x={getWindow('macos').x}
+          y={getWindow('macos').y}
+          width={getWindow('macos').width}
+          height={getWindow('macos').height}
+          zIndex={getWindow('macos').zIndex}
+          isActive={activeWindowId === 'macos'}
+          onFocus={() => focusWindow('macos')}
+          onClose={() => closeWindow('macos')}
+          onMinimize={() => minimizeWindow('macos')}
+          onMaximize={() => maximizeWindow('macos')}
+          onMove={(x, y) => moveWindow('macos', x, y)}
+          menuBar={[
+            { label: 'Apple', items: ['About Macintosh', 'Restart System', 'Eject Floppy'] },
+            { label: 'View', items: ['System 7 Classic', 'Mac OS 9 Platinum', 'Aqua Dock'] },
+            { label: 'Help', items: ['Thinking Different', 'Why Not Windows?'] },
+          ]}
+          statusBarText="Motorola 68040 Emulation · 16MB RAM Allocated · Mac OS 7.5.3"
+        >
+          <MacOSEnvironment />
         </WindowFrame>
       )}
 

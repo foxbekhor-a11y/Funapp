@@ -9,7 +9,8 @@ export type AppId =
   | 'settings'
   | 'games'
   | 'minecraft'
-  | 'browser';
+  | 'browser'
+  | 'macos';
 
 export interface WindowState {
   id: AppId;

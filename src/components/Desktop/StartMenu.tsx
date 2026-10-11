@@ -88,6 +88,23 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               <button
                 onClick={() => {
                   sounds.playClick();
+                  onOpenApp('macos');
+                  onClose();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-[#000080] hover:text-white text-left text-black"
+              >
+                <div className="w-4 h-4 bg-[#f4efe1] rounded-[1px] border border-black/40 flex items-center justify-center text-[10px]">
+                  🍎
+                </div>
+                <div>
+                  <div className="font-bold">Macintosh 98 (System 7.5)</div>
+                  <div className="text-[10px] text-gray-600 hover:text-white">Apple Mac OS Environment</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  sounds.playClick();
                   onOpenApp('self_help');
                   onClose();
                 }}
