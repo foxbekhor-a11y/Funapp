@@ -24,9 +24,10 @@ import {
   Bot
 } from 'lucide-react';
 import { sounds } from '../../../utils/soundEffects';
+import { Windows11Environment } from './Windows11Environment';
 
 type MacTheme = 'system7' | 'macos9' | 'aqua';
-type InnerAppId = 'hd' | 'paint' | 'simpletext' | 'speech' | 'calculator' | 'about' | 'patterns' | 'bomb' | 'siri';
+type InnerAppId = 'hd' | 'paint' | 'simpletext' | 'speech' | 'calculator' | 'about' | 'patterns' | 'bomb' | 'siri' | 'win11';
 
 interface InnerWindow {
   id: InnerAppId;
@@ -82,6 +83,7 @@ export const MacOSEnvironment: React.FC = () => {
   // Inner windows state
   const [windows, setWindows] = useState<InnerWindow[]>([
     { id: 'simpletext', title: 'TeachText - Think Different', isOpen: true, x: 25, y: 35, width: 330, height: 220, zIndex: 10 },
+    { id: 'win11', title: 'Virtual PC - Windows 11 Pro', isOpen: false, x: 40, y: 30, width: 480, height: 380, zIndex: 13 },
     { id: 'siri', title: 'Siri AI Assistant (Cupertino Intelligence)', isOpen: false, x: 65, y: 30, width: 370, height: 360, zIndex: 12 },
     { id: 'paint', title: 'MacPaint 1.0', isOpen: false, x: 50, y: 45, width: 380, height: 280, zIndex: 9 },
     { id: 'speech', title: 'MacinTalk Speech Synthesizer', isOpen: false, x: 75, y: 65, width: 320, height: 220, zIndex: 8 },
@@ -412,6 +414,18 @@ export const MacOSEnvironment: React.FC = () => {
                       <span>Siri AI Assistant ✨</span>
                     </button>
                     <button
+                      onClick={() => openInnerWindow('win11')}
+                      className="w-full text-left px-3 py-1 text-blue-900 font-bold hover:bg-black hover:text-white flex items-center gap-1.5"
+                    >
+                      <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                      </div>
+                      <span>Windows 11 VM (Virtual PC) 🪟</span>
+                    </button>
+                    <button
                       onClick={() => openInnerWindow('calculator')}
                       className="w-full text-left px-3 py-1 hover:bg-black hover:text-white"
                     >
@@ -615,6 +629,25 @@ export const MacOSEnvironment: React.FC = () => {
                 </div>
                 <span className="bg-white/80 border border-black/40 px-1.5 py-0.2 rounded-xs text-[10px] font-bold text-purple-900 drop-shadow">
                   Siri AI
+                </span>
+              </div>
+
+              {/* Windows 11 Virtual Machine Icon */}
+              <div
+                onClick={() => openInnerWindow('win11')}
+                className="flex flex-col items-center gap-1 cursor-pointer group"
+                title="Virtual PC - Windows 11 Pro"
+              >
+                <div className="w-10 h-10 bg-[#001024] border-2 border-[#00a4ef] shadow-md rounded-xs flex items-center justify-center p-1 group-hover:scale-110 transition-transform">
+                  <div className="grid grid-cols-2 gap-0.5 w-5 h-5">
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                  </div>
+                </div>
+                <span className="bg-white/80 border border-black/40 px-1 py-0.2 rounded-xs text-[10px] font-bold text-blue-900 drop-shadow">
+                  Win 11 VM
                 </span>
               </div>
 
@@ -1139,6 +1172,57 @@ export const MacOSEnvironment: React.FC = () => {
               </div>
             )}
 
+            {/* 6.5. WINDOWS 11 VIRTUAL MACHINE WINDOW */}
+            {getWindow('win11').isOpen && (
+              <div
+                onClick={() => focusInnerWindow('win11')}
+                className="absolute bg-[#0c1829] border-2 border-black shadow-2xl rounded-xs flex flex-col overflow-hidden"
+                style={{
+                  left: `${getWindow('win11').x}px`,
+                  top: `${getWindow('win11').y}px`,
+                  width: `${getWindow('win11').width}px`,
+                  height: `${getWindow('win11').height}px`,
+                  zIndex: getWindow('win11').zIndex,
+                }}
+              >
+                {/* Classic Mac OS Title Bar wrapping Windows 11 */}
+                <div className="bg-[#e4e2d8] border-b border-black px-2 py-1 flex items-center justify-between font-sans text-xs shrink-0 select-none">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeInnerWindow('win11');
+                      }}
+                      className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center hover:bg-black/20"
+                      title="Close Virtual Machine"
+                    >
+                      <Square size={8} />
+                    </button>
+                    <span className="font-bold truncate text-[11px] text-black flex items-center gap-1.5">
+                      <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                        <div className="bg-[#00a4ef] rounded-[0.5px]" />
+                      </div>
+                      <span>Virtual PC - Windows 11 Pro [Inception Mode]</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-700 font-mono">
+                    <span className="bg-white/80 px-1 border border-black/30 rounded-xs text-[9px]">x86-64 VM</span>
+                    <div className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-black" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Windows 11 Running Inside Mac Window */}
+                <div className="flex-1 overflow-hidden relative">
+                  <Windows11Environment />
+                </div>
+              </div>
+            )}
+
             {/* 7. SYSTEM BOMB ERROR DIALOG */}
             {getWindow('bomb').isOpen && (
               <div
@@ -1200,6 +1284,20 @@ export const MacOSEnvironment: React.FC = () => {
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 via-pink-500 to-cyan-400 flex items-center justify-center shadow">
                   <Sparkles size={16} className="text-white" />
+                </div>
+              </button>
+              <button
+                onClick={() => openInnerWindow('win11')}
+                className="hover:scale-125 transition-transform flex flex-col items-center"
+                title="Windows 11 VM"
+              >
+                <div className="w-8 h-8 rounded-xl bg-[#001024] border border-[#00a4ef] flex items-center justify-center shadow">
+                  <div className="grid grid-cols-2 gap-0.5 w-4 h-4">
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                    <div className="bg-[#00a4ef] rounded-[1px]" />
+                  </div>
                 </div>
               </button>
               <button

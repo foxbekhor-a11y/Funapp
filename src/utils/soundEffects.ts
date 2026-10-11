@@ -463,6 +463,31 @@ class SoundManager {
     } catch (e) {}
   }
 
+  // Modern Windows 11 startup chime (gentle warm ambient sparkle chord)
+  public playWin11Chime() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.getAudioContext();
+      const now = ctx.currentTime;
+      // F-major floating chord: F4 (349.23), A4 (440.0), C5 (523.25), E5 (659.25), F5 (698.46)
+      const notes = [349.23, 440.0, 523.25, 659.25, 698.46];
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const startTime = now + idx * 0.04;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.06, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 1.8);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 1.9);
+      });
+    } catch (e) {}
+  }
+
   // Synthesize text speech with vintage robotic pitch
   public speak(text: string, persona: string = 'clippy') {
     if (!this.speechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
